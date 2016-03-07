@@ -200,6 +200,7 @@ int main (int argc, char *argv[])
     int delay = 0;
     int skip = 0;
     int quality = 95;
+    int autogain = -1;
     int post_capture_command_wait = 0;
     int multifile = 0;   /* flag indicating that we save to a multi-file sequence */
     int i = 0;
@@ -290,10 +291,14 @@ int main (int argc, char *argv[])
             saturation = atoi (&argv[1][2]);
             break;
 
-        case 'G':
-            gain = atoi (&argv[1][2]);
-            break;
-
+            case 'G':
+                gain = atoi (&argv[1][2]);
+                break;
+                
+            case 'A':
+                autogain = atoi (&argv[1][2]);
+                break;
+                
         case 'q':
             quality = atoi (&argv[1][2]);
             break;
@@ -344,7 +349,10 @@ int main (int argc, char *argv[])
     v4l2ResetControl (videoIn, V4L2_CID_CONTRAST);
     v4l2ResetControl (videoIn, V4L2_CID_SATURATION);
     v4l2ResetControl (videoIn, V4L2_CID_GAIN);
+    v4l2ResetControl (videoIn, V4L2_CID_AUTOGAIN);
 
+    
+    
     //Setup Camera Parameters
     if (brightness != 0) {
         if (verbose >= 1)
@@ -361,10 +369,20 @@ int main (int argc, char *argv[])
             fprintf (stderr, "Setting camera exposure to %d\n", exposure);
         v4l2SetControl (videoIn, V4L2_CID_EXPOSURE, exposure);
     } else if (verbose >= 1) {
-        fprintf (stderr, "Camera brightness level is %d\n",
+        fprintf (stderr, "Camera exposure  level is %d\n",
                  v4l2GetControl (videoIn, V4L2_CID_EXPOSURE));
     }
-
+    
+    
+    if (autogain != -1) {
+        if (verbose >= 1)
+            fprintf (stderr, "Setting camera autogain to %d\n", autogain);
+        v4l2SetControl (videoIn, V4L2_CID_AUTOGAIN, autogain);
+    } else if (verbose >= 1) {
+        fprintf (stderr, "Camera autogain  level is %d\n",
+                 v4l2GetControl (videoIn, V4L2_CID_AUTOGAIN));
+    }
+    
     
     if (contrast != 0) {
         if (verbose >= 1)
