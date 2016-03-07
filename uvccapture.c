@@ -32,7 +32,7 @@
 #include <unistd.h>
 #include <jpeglib.h>
 #include <time.h>
-#include <linux/videodev.h>
+#include <linux/videodev2.h>
 
 #include "v4l2uvc.h"
 
@@ -72,6 +72,7 @@ void usage (void)
              "-w\t\tWait for capture command to finish before starting next capture\n");
     fprintf (stderr, "-m\t\tToggles capture mode to YUYV capture\n");
     fprintf (stderr, "Camera Settings:\n");
+    fprintf (stderr, "-E<integer>\tExposure\n");
     fprintf (stderr, "-B<integer>\tBrightness\n");
     fprintf (stderr, "-C<integer>\tContrast\n");
     fprintf (stderr, "-S<integer>\tSaturation\n");
@@ -192,6 +193,7 @@ int main (int argc, char *argv[])
     int grabmethod = 1;
     int width = 320;
     int height = 240;
+    int exposure = 0;
     int brightness = 0, contrast = 0, saturation = 0, gain = 0;
     int num = -1; /* number of images to capture */
     int verbose = 0;
@@ -272,10 +274,14 @@ int main (int argc, char *argv[])
             post_capture_command_wait = 1;
             break;
 
-        case 'B':
-            brightness = atoi (&argv[1][2]);
-            break;
-
+            case 'B':
+                brightness = atoi (&argv[1][2]);
+                break;
+                
+            case 'E':
+                exposure = atoi (&argv[1][2]);
+                break;
+                
         case 'C':
             contrast = atoi (&argv[1][2]);
             break;
@@ -334,6 +340,7 @@ int main (int argc, char *argv[])
     if (verbose >= 1)
         fprintf (stderr, "Resetting camera settings\n");
     v4l2ResetControl (videoIn, V4L2_CID_BRIGHTNESS);
+    v4l2ResetControl (videoIn, V4L2_CID_EXPOSURE);
     v4l2ResetControl (videoIn, V4L2_CID_CONTRAST);
     v4l2ResetControl (videoIn, V4L2_CID_SATURATION);
     v4l2ResetControl (videoIn, V4L2_CID_GAIN);
@@ -347,6 +354,18 @@ int main (int argc, char *argv[])
         fprintf (stderr, "Camera brightness level is %d\n",
                  v4l2GetControl (videoIn, V4L2_CID_BRIGHTNESS));
     }
+    
+    
+    if (exposure != 0) {
+        if (verbose >= 1)
+            fprintf (stderr, "Setting camera exposure to %d\n", exposure);
+        v4l2SetControl (videoIn, V4L2_CID_EXPOSURE, exposure);
+    } else if (verbose >= 1) {
+        fprintf (stderr, "Camera brightness level is %d\n",
+                 v4l2GetControl (videoIn, V4L2_CID_EXPOSURE));
+    }
+
+    
     if (contrast != 0) {
         if (verbose >= 1)
             fprintf (stderr, "Setting camera contrast to %d\n", contrast);
